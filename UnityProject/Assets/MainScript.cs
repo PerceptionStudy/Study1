@@ -16,8 +16,12 @@ public class MainScript : MonoBehaviour
 
 	private bool initiated = false;
 	private MolObject[] molObjects;
+	private MolObject focusObject; 
 
-	static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	//static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
+	//static Color[] molColors = {Color.white}; 
+
 
 	public void CreateMolObjects()
 	{
@@ -25,9 +29,11 @@ public class MainScript : MonoBehaviour
 		molObjects = new MolObject[count];		
 
 		for(int i = 0; i< count; i++)
-			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count () - 1)]));	
+			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
 
 		initiated = true;
+
+		focusObject = null; 
 	}
 
 	private Rect windowRect = new Rect(20, 20, 170, 180);
@@ -87,6 +93,16 @@ public class MainScript : MonoBehaviour
 		{
 			MakeObjectBlink(molObjects[UnityEngine.Random.Range(0, molObjects.Count()-1)]);
 		}
+
+		if (Input.GetKeyDown ("l")) 
+		{
+			ChangeObjectLuminance(GetRandomMolObject());
+		}
+	}
+
+	MolObject GetRandomMolObject()
+	{
+		return molObjects [UnityEngine.Random.Range (0, molObjects.Count () - 1)]; 
 	}
 
 	void MakeObjectBlink(MolObject molObject)
@@ -98,6 +114,15 @@ public class MainScript : MonoBehaviour
 		molObject.StartFrequency = float.Parse(startFrequency);
 		molObject.StopFrequency = float.Parse(stopFrequency);
 		molObject.Duration = float.Parse(duration);
+	}
+
+	void ChangeObjectLuminance(MolObject molObject)
+	{
+		if(focusObject != null){
+			focusObject.currentColor = new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count () - 1)]); 
+		}
+		molObject.currentColor = new MolColor (Color.black); 
+		focusObject = molObject; 
 	}
 
 	void FixedUpdate()

@@ -23,7 +23,8 @@ public class MolObject : MonoBehaviour
 	static float drag = 5;	
 	static float randomForce = 100;
 
-	static Color defaultColor = Color.white; 
+	public MolColor defaultColor = new MolColor(Color.white); 
+	public MolColor currentColor; 
 
 //	private Color normalColor = Color.white;
 //	private Color highlightedColor = Color.black;
@@ -44,6 +45,8 @@ public class MolObject : MonoBehaviour
 	        var molObject = molGameObject.GetComponent<MolObject>();
 
 	        molObject.rigidbody.angularDrag = drag;
+			molObject.defaultColor = color; 
+			molObject.currentColor = color; 
 			molGameObject.GetComponent<MeshRenderer>().material.color = color.rgba;
 
 	        return molObject;
@@ -92,6 +95,8 @@ public class MolObject : MonoBehaviour
 
     void Update () 
 	{
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
+
         if (!flicker) return;
 
         var t = (float)stopWatch_1.Elapsed.TotalSeconds;
