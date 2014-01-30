@@ -9,7 +9,7 @@ using System.Linq;
 public class MainScript : MonoBehaviour 
 {
 	public int count = 100;
-	public Vector3 boxSize = new Vector3(100, 0, 100);
+	public Vector3 boxSize = new Vector3(0.0f, 0.0f, 0.0f);
 
 	public BlinkingType blinkingType = BlinkingType.EQUAL;
 	public InterpolationType interpolationType = InterpolationType.LINEAR;
@@ -17,12 +17,15 @@ public class MainScript : MonoBehaviour
 	private bool initiated = false;
 	private MolObject[] molObjects;
 
+	static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+
 	public void CreateMolObjects()
 	{
+
 		molObjects = new MolObject[count];		
 
 		for(int i = 0; i< count; i++)
-			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize);	
+			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count () - 1)]));	
 
 		initiated = true;
 	}

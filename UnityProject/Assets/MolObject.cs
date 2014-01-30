@@ -23,12 +23,14 @@ public class MolObject : MonoBehaviour
 	static float drag = 5;	
 	static float randomForce = 100;
 
+	static Color defaultColor = Color.white; 
+
 //	private Color normalColor = Color.white;
 //	private Color highlightedColor = Color.black;
 
     public float Frequency { get; set; }
 
-    public static MolObject CreateNewMolObject(Transform parent, string name, Vector3 boxSize)
+    public static MolObject CreateNewMolObject(Transform parent, string name, Vector3 boxSize, MolColor color)
 	{
 		var position = new Vector3 ((UnityEngine.Random.value - 0.5f) * boxSize.x, (UnityEngine.Random.value - 0.5f) * boxSize.y, (UnityEngine.Random.value - 0.5f) * boxSize.z);
 
@@ -42,7 +44,7 @@ public class MolObject : MonoBehaviour
 	        var molObject = molGameObject.GetComponent<MolObject>();
 
 	        molObject.rigidbody.angularDrag = drag;
-	        molGameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+			molGameObject.GetComponent<MeshRenderer>().material.color = color.rgba;
 
 	        return molObject;
 	    }
