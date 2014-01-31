@@ -150,12 +150,13 @@ public class MolObject : MonoBehaviour
 		if (clamp < 0.0f) {
 			hiL += clamp; 
 			loL += clamp; 
-		} else {
-			if(loL < 0.0f){
-				hiL -= loL; 
-				loL = 0.0f; 
-			}
+		} 
+
+		if(loL < 0.0f){
+			hiL -= loL; 
+			loL = 0.0f; 
 		}
+
 
 		flickerHiColor = new MolColor (hiL, currentColor.a, currentColor.b); 
 		flickerLoColor = new MolColor (loL, currentColor.a, currentColor.b); 
@@ -189,8 +190,10 @@ public class MolObject : MonoBehaviour
 
 		int amp = LAmplitude1; 
 		if (t > flickerLength) {
-			// TODO: ease-out 
 			amp = LAmplitude2; 
+		} else if(t > (flickerLength - easeOutTime)){
+			float s = (float)((t - (flickerLength - easeOutTime))) / (float)(easeOutTime); 
+			amp = LAmplitude2 + (int)((1.0f - s) * (float)(LAmplitude1 - LAmplitude2)); 
 		}
 
 		// flicker if: still in initial flicker phase or if target continuous to flicker

@@ -18,9 +18,9 @@ public class MainScript : MonoBehaviour
 	private MolObject[] molObjects;
 	private MolObject focusObject; 
 
-	//static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
 	//static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
-	static Color[] molColors = {Color.white}; 
+	//static Color[] molColors = {Color.magenta}; 
 
 
 	public void CreateMolObjects()
