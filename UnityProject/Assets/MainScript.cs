@@ -9,22 +9,31 @@ using System.Linq;
 public class MainScript : MonoBehaviour 
 {
 	public int count = 100;
-	public Vector3 boxSize = new Vector3(100, 0, 100);
+	public Vector3 boxSize = new Vector3(0.0f, 0.0f, 0.0f);
 
 	public BlinkingType blinkingType = BlinkingType.EQUAL;
 	public InterpolationType interpolationType = InterpolationType.LINEAR;
 
 	private bool initiated = false;
 	private MolObject[] molObjects;
+	private MolObject focusObject; 
+
+	static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	//static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
+	//static Color[] molColors = {Color.magenta}; 
+
 
 	public void CreateMolObjects()
 	{
+
 		molObjects = new MolObject[count];		
 
 		for(int i = 0; i< count; i++)
-			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize);	
+			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, boxSize, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
 
 		initiated = true;
+
+		focusObject = null; 
 	}
 
 	private Rect windowRect = new Rect(20, 20, 170, 180);
@@ -84,6 +93,20 @@ public class MainScript : MonoBehaviour
 		{
 			MakeObjectBlink(molObjects[UnityEngine.Random.Range(0, molObjects.Count()-1)]);
 		}
+
+		if (Input.GetKeyDown ("l")) 
+		{
+			ChangeObjectLuminance(GetRandomMolObject());
+		}
+
+		if (Input.GetKeyDown ("f")) {
+			InitLuminanceFlicker (GetRandomMolObject ());
+		}
+	}
+
+	MolObject GetRandomMolObject()
+	{
+		return molObjects [UnityEngine.Random.Range (0, molObjects.Count () - 1)]; 
 	}
 
 	void MakeObjectBlink(MolObject molObject)
@@ -95,6 +118,24 @@ public class MainScript : MonoBehaviour
 		molObject.StartFrequency = float.Parse(startFrequency);
 		molObject.StopFrequency = float.Parse(stopFrequency);
 		molObject.Duration = float.Parse(duration);
+	}
+
+	void InitLuminanceFlicker(MolObject molObject)
+	{
+		if (focusObject != null) {
+			focusObject.StopLuminanceFlicker (); 
+		}
+		molObject.StartLuminanceFlicker (); 
+		focusObject = molObject; 
+	}
+
+	void ChangeObjectLuminance(MolObject molObject)
+	{
+		if(focusObject != null){
+			focusObject.currentColor = new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count () - 1)]); 
+		}
+		molObject.currentColor = new MolColor (Color.black); 
+		focusObject = molObject; 
 	}
 
 	void FixedUpdate()
