@@ -19,8 +19,8 @@ public class MainScript : MonoBehaviour
 	private MolObject focusObject; 
 
 	//static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
-	static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
-	//static Color[] molColors = {Color.white}; 
+	//static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
+	static Color[] molColors = {Color.white}; 
 
 
 	public void CreateMolObjects()
@@ -98,6 +98,10 @@ public class MainScript : MonoBehaviour
 		{
 			ChangeObjectLuminance(GetRandomMolObject());
 		}
+
+		if (Input.GetKeyDown ("f")) {
+			InitLuminanceFlicker (GetRandomMolObject ());
+		}
 	}
 
 	MolObject GetRandomMolObject()
@@ -114,6 +118,15 @@ public class MainScript : MonoBehaviour
 		molObject.StartFrequency = float.Parse(startFrequency);
 		molObject.StopFrequency = float.Parse(stopFrequency);
 		molObject.Duration = float.Parse(duration);
+	}
+
+	void InitLuminanceFlicker(MolObject molObject)
+	{
+		if (focusObject != null) {
+			focusObject.StopLuminanceFlicker (); 
+		}
+		molObject.StartLuminanceFlicker (); 
+		focusObject = molObject; 
 	}
 
 	void ChangeObjectLuminance(MolObject molObject)
