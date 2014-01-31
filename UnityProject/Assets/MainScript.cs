@@ -11,6 +11,14 @@ public class MainScript : MonoBehaviour
 	public int count = 100;
 	public Vector3 boxSize = new Vector3(0.0f, 0.0f, 0.0f);
 
+	public string modeText = ""; 
+	public string parameterValueText = ""; 
+	public int stepWidth = 10; 
+	public int currParameterValue = 0; 
+
+	public delegate void AdjustParamterDelegate(int step); 
+	public AdjustParamterDelegate adjustParamFunc = null;  
+
 	public BlinkingType blinkingType = BlinkingType.EQUAL;
 	public InterpolationType interpolationType = InterpolationType.LINEAR;
 
@@ -18,9 +26,55 @@ public class MainScript : MonoBehaviour
 	private MolObject[] molObjects;
 	private MolObject focusObject; 
 
-	static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	//static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
+	// isoluminent RGB tripels from http://www.cs.ubc.ca/~tmm/courses/infovis/morereadings/FaceLumin.pdf (Figure 7)
+	static Color[] molColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
 	//static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
 	//static Color[] molColors = {Color.magenta}; 
+
+	// adjust parameters
+
+	public void AdjustCycleLength(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.cycleLength += step; 
+			currParameterValue = molObject.cycleLength; 
+		}
+	}
+
+	public void AdjustFlickerAmplitude(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.LAmplitude1 += step; 
+			currParameterValue = molObject.LAmplitude1; 
+		}
+	}
+
+	public void AdjustFocusAmplitude(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.LAmplitude2 += step; 
+			currParameterValue = molObject.LAmplitude2; 
+		}
+	}
+
+	public void AdjustFocusOffset(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.LOffset += step; 
+			currParameterValue = molObject.LOffset; 
+		}
+	}
+
+	public void AdjustFlickerDuration(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.flickerLength += step; 
+			currParameterValue = molObject.flickerLength; 
+		}
+	}
+
+	public void AdjustEaseOutDuration(int step){
+		foreach (MolObject molObject in molObjects) {
+			molObject.easeOutTime += step; 
+			currParameterValue = molObject.easeOutTime; 
+		}
+	}
 
 
 	public void CreateMolObjects()
@@ -36,7 +90,7 @@ public class MainScript : MonoBehaviour
 		focusObject = null; 
 	}
 
-	private Rect windowRect = new Rect(20, 20, 170, 180);
+	private Rect windowRect = new Rect(20, 20, 200, 240);
 
 	private string startFrequency = "30";
 	private string stopFrequency = "5";
@@ -58,6 +112,9 @@ public class MainScript : MonoBehaviour
 
 		GUI.Label(new Rect(10, 125, 150, 20), "Duration (s)");
 		duration = GUI.TextField(new Rect(10, 150, 150, 20), duration);
+
+		GUI.Label (new Rect (10, 175, 200, 20), modeText); 
+		GUI.Label (new Rect (10, 200, 150, 20), parameterValueText); 
 
 		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 	}
@@ -84,9 +141,16 @@ public class MainScript : MonoBehaviour
 			}
 		}
 		
-		if (Input.GetKey ("escape"))
+		if (Input.GetKeyDown ("escape"))
 		{
-			Application.Quit();
+			if(modeText.Length == 0){
+				Application.Quit();
+			}
+			else{
+				modeText = ""; 
+				parameterValueText = ""; 
+				adjustParamFunc = null; 
+			}
 		}
 
 		if (Input.GetKeyDown ("space"))
@@ -101,6 +165,58 @@ public class MainScript : MonoBehaviour
 
 		if (Input.GetKeyDown ("f")) {
 			InitLuminanceFlicker (GetRandomMolObject ());
+		}
+
+		// set parameters
+
+		if (Input.GetKeyDown ("a")) {
+			setCurrentParameter("L* flicker amp", 5, new AdjustParamterDelegate(AdjustFlickerAmplitude)); 
+		}
+
+		if (Input.GetKeyDown ("s")) {
+			setCurrentParameter("L* focus amp", 1, new AdjustParamterDelegate(AdjustFocusAmplitude)); 
+		}
+
+		if (Input.GetKeyDown ("o")) {
+			setCurrentParameter("L* focus offset", 1, new AdjustParamterDelegate(AdjustFocusOffset)); 
+		}
+
+		if (Input.GetKeyDown ("d")) {
+			setCurrentParameter("flicker duration", 50, new AdjustParamterDelegate(AdjustFlickerDuration)); 
+		}
+
+		if (Input.GetKeyDown ("e")) {
+			setCurrentParameter("ease-out time", 10, new AdjustParamterDelegate(AdjustEaseOutDuration)); 
+		}
+
+		if (Input.GetKeyDown ("c")) {
+			setCurrentParameter("cycle length", 5, new AdjustParamterDelegate(AdjustCycleLength));  
+		}
+
+		// adjust parameters 
+
+		if (Input.GetKeyDown ("up")) {
+			updateParameter(stepWidth); 
+		}
+
+		if (Input.GetKeyDown ("down")) {
+			updateParameter(-stepWidth); 
+		}
+	}
+
+	void setCurrentParameter(string name, int step, AdjustParamterDelegate func)
+	{
+		modeText = name; 
+		stepWidth = step; 
+		adjustParamFunc = func; 
+		updateParameter (0); 
+	}
+
+	void updateParameter (int step)
+	{
+		if(adjustParamFunc != null){
+			adjustParamFunc(step);
+			parameterValueText = "" + currParameterValue; 
 		}
 	}
 
