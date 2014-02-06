@@ -56,6 +56,12 @@ public class MolObject : MonoBehaviour
 
 	public float Frequency { get; set; }
 
+	public void AdjustCycleLength(int step){
+		//foreach (MolObject molObject in molObjects) {
+		//	molObject.cycleLength += step; 
+		//}
+	}
+
 	public static MolObject CreateNewMolObject (Transform parent, string name, Vector3 boxSize, MolColor color)
 	{
 		var position = new Vector3 ((UnityEngine.Random.value - 0.5f) * boxSize.x, (UnityEngine.Random.value - 0.5f) * boxSize.y, (UnityEngine.Random.value - 0.5f) * boxSize.z);
@@ -75,6 +81,8 @@ public class MolObject : MonoBehaviour
 			molObject.flickerLoColor = null; 
 
 			molGameObject.GetComponent<MeshRenderer> ().material.color = color.rgba;
+
+			//molObject.gameObject.transform.localScale = new Vector3(0.25f, 1.0f, 1.0f);
 
 			return molObject;
 		}
@@ -137,6 +145,8 @@ public class MolObject : MonoBehaviour
 		currentColor = defaultColor; 
 		flickerHiColor = null; 
 		flickerLoColor = null; 
+
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
 	}
 
 	private void SetFlickerColors()
