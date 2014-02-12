@@ -76,86 +76,86 @@ public class Settings : Singleton<Settings>
 
 	void Update () 
 	{
-		Dictionary<string, string> values = GetDictionarySettings();
-		char[] alphabet = Settings.Instance.alphabet.ToCharArray();
-
-		int count = 0;
-		int selectedIndex = -1;
-
-		foreach(char c in alphabet)
-		{
-			if(Input.GetKeyDown(c.ToString()))
-			{
-				selectedIndex = count;
-			}
-			count ++;
-		}
-
-		if(selectedIndex != -1 && selectedIndex < values.Count)
-		{
-			string key = values.Keys.ElementAt(selectedIndex);
-			float value = float.Parse(values.Values.ElementAt(selectedIndex));
-
-			if(Input.GetKey(KeyCode.UpArrow))
-			{
-				if(Input.GetKey(KeyCode.Keypad1))
-				{
-					value += 0.01f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad2))
-				{
-					value += 0.1f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad3))
-				{
-					value += 1.0f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad4))
-				{
-					value += 10.0f;					
-				}
-
-				if(Input.GetKey(KeyCode.Keypad5))
-				{
-					value += 100.0f;					
-				}
-			}
-			else if(Input.GetKey(KeyCode.DownArrow))
-			{
-				if(Input.GetKey(KeyCode.Keypad1))
-				{
-					value -= 0.01f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad2))
-				{
-					value -= 0.1f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad3))
-				{
-					value -= 1.0f;
-				}
-
-				if(Input.GetKey(KeyCode.Keypad4))
-				{
-					value -= 10.0f;					
-				}
-
-				if(Input.GetKey(KeyCode.Keypad5))
-				{
-					value -= 100.0f;					
-				}
-			}
-
-			values[key] = value.ToString();
-			string json = JsonConvert.SerializeObject(values);
-			SettingsValues v = JsonConvert.DeserializeObject<SettingsValues>(json);
-			Settings.Values = (SettingsValues)v.Clone();
-		}
+//		Dictionary<string, string> values = GetDictionarySettings();
+//		char[] alphabet = Settings.Instance.alphabet.ToCharArray();
+//
+//		int count = 0;
+//		int selectedIndex = -1;
+//
+//		foreach(char c in alphabet)
+//		{
+//			if(Input.GetKeyDown(c.ToString()))
+//			{
+//				selectedIndex = count;
+//			}
+//			count ++;
+//		}
+//
+//		if(selectedIndex != -1 && selectedIndex < values.Count)
+//		{
+//			string key = values.Keys.ElementAt(selectedIndex);
+//			float value = float.Parse(values.Values.ElementAt(selectedIndex));
+//
+//			if(Input.GetKey(KeyCode.UpArrow))
+//			{
+//				if(Input.GetKey(KeyCode.Keypad1))
+//				{
+//					value += 0.01f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad2))
+//				{
+//					value += 0.1f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad3))
+//				{
+//					value += 1.0f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad4))
+//				{
+//					value += 10.0f;					
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad5))
+//				{
+//					value += 100.0f;					
+//				}
+//			}
+//			else if(Input.GetKey(KeyCode.DownArrow))
+//			{
+//				if(Input.GetKey(KeyCode.Keypad1))
+//				{
+//					value -= 0.01f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad2))
+//				{
+//					value -= 0.1f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad3))
+//				{
+//					value -= 1.0f;
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad4))
+//				{
+//					value -= 10.0f;					
+//				}
+//
+//				if(Input.GetKey(KeyCode.Keypad5))
+//				{
+//					value -= 100.0f;					
+//				}
+//			}
+//
+//			values[key] = value.ToString();
+//			string json = JsonConvert.SerializeObject(values);
+//			SettingsValues v = JsonConvert.DeserializeObject<SettingsValues>(json);
+//			Settings.Values = (SettingsValues)v.Clone();
+//		}
 	}
 
 	new public void OnDestroy () 
