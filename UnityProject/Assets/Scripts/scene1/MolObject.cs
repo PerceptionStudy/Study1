@@ -90,11 +90,6 @@ public class MolObject : MonoBehaviour
 		rigidbody.position = temp; 
 	}
 
-	float GetIntensityShift(float currentFrequency, float currentAmplitude, float currentTime)
-	{
-		return (float)Math.Sin(currentTime * 2.0f * (float)Math.PI * currentFrequency) * currentAmplitude;
-	}
-
 	Color ShiftColorIntensity (MolColor defaultColor, float intensity)
 	{
 		throw new NotImplementedException ();
@@ -109,7 +104,7 @@ public class MolObject : MonoBehaviour
 		int currentTimeMillis = (int)stopWatch.ElapsedMilliseconds;
 		float progress_1 = Mathf.Clamp((float)currentTimeMillis / Settings.Values.interpolationDuration, 0.0f, 1.0f);
 		
-		float currentHalfWaveLength = Settings.Values.startFrequency + (Settings.Values.endFrequency - Settings.Values.startFrequency) * progress_1;
+		float currentHalfWaveLength = Settings.Values.startHalfWaveLength + (Settings.Values.endHalfWaveLength - Settings.Values.startHalfWaveLength) * progress_1;
 		float currentAmplitude = Settings.Values.startAmplitude + (Settings.Values.endAmplitude - Settings.Values.startAmplitude) * progress_1;		
 		
 		int currentWaveTime = (int)stopWatch_2.ElapsedMilliseconds;

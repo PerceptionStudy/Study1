@@ -181,8 +181,8 @@ public class SettingsValues : ICloneable
 	// Luminance-modulation properties
 	public float interpolationDuration = 1000.0f;
 	public float totalDuration = 10000.0f;
-	public float startFrequency = 2.0f;
-	public float endFrequency = 2.0f;
+	public float startHalfWaveLength = 2.0f;
+	public float endHalfWaveLength = 2.0f;
 	public float startAmplitude = 10.0f;
 	public float endAmplitude = 10.0f;	
 	public float amplitudeOffset = 0.0f;

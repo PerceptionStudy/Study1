@@ -1,1 +1,1 @@
-{"drag":2.0,"randomForce":50.0,"boxSizeX":37.0,"boxSizeY":20.0,"boxSizeZ":1.0,"molScale":1.0,"cameraSize":10.0,"interpolationDuration":1.0,"totalDuration":20000.0,"startFrequency":10.0,"endFrequency":50.0,"startAmplitude":30.0,"endAmplitude":2.0,"amplitudeOffset":0.0}
+{"drag":2.0,"randomForce":50.0,"boxSizeX":37.0,"boxSizeY":20.0,"boxSizeZ":1.0,"molScale":1.0,"cameraSize":10.0,"interpolationDuration":5000.0,"totalDuration":10000.0,"startHalfWaveLength":10.0,"endHalfWaveLength":100.0,"startAmplitude":30.0,"endAmplitude":2.0,"amplitudeOffset":0.0}
