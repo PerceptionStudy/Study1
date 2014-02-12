@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO; 
 
 public class MainScript : MonoBehaviour 
 {
@@ -125,6 +126,41 @@ public class MainScript : MonoBehaviour
 
 			Settings.LoadSettings();
 			CreateMolObjects();
+
+			LogLib.Logger<int> distLogger = new LogLib.Logger<int>("distance", "TODO:username", ""); 
+			distLogger.AddFactor("rep"); 
+			distLogger.AddFactor("ecc"); 
+			// TODO: add
+			// distLogger.AddFactor("dur"); 
+			// distLogger.AddFactor("amp"); 
+
+			// TODO: remove (just a test) 
+			distLogger.NewEntry(); 
+			distLogger.Log ("rep", "1"); 
+			distLogger.Log ("ecc", "F"); 
+			distLogger.Log (1); 
+
+			distLogger.NewEntry(); 
+			distLogger.Log ("rep", "1"); 
+			distLogger.Log ("ecc", "P"); 
+			distLogger.Log (2); 
+
+			distLogger.NewEntry(); 
+			distLogger.Log ("rep", "2"); 
+			distLogger.Log ("ecc", "P"); 
+			distLogger.Log (4); 
+
+			distLogger.NewEntry(); 
+			distLogger.Log ("rep", "2"); 
+			distLogger.Log ("ecc", "F"); 
+			distLogger.Log (3); 
+
+			// file will be written to UnityProject folder
+			const string fileName = "distanceTest.csv"; 
+			StreamWriter fileWriter = new StreamWriter(fileName, true); 
+			bool writeHeader = (new FileInfo(fileName).Length == 0); 
+			distLogger.WriteSingleRowCSV(fileWriter, writeHeader);
+			// TODO: end test
 		}
 	}
 
