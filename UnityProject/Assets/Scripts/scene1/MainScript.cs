@@ -77,8 +77,16 @@ public class MainScript : MonoBehaviour
 
 	void LoadStimuli ()
 	{
+		stimuli.Clear();
+
 		int[] durationValues = {(int)Settings.Values.duration_1, (int)Settings.Values.duration_2, (int)Settings.Values.duration_3, (int)Settings.Values.duration_4, (int)Settings.Values.duration_5};
 		int[] amplitudeValues = {(int)Settings.Values.amplitude_1, (int)Settings.Values.amplitude_2, (int)Settings.Values.amplitude_3, (int)Settings.Values.amplitude_4, (int)Settings.Values.amplitude_5};
+
+		if(Settings.Values.debug >= 1 )
+		{
+			durationValues = new int[] {(int)Settings.Values.duration_1};
+			amplitudeValues = new int[] {(int)Settings.Values.amplitude_1};
+		}
 
 		int count = 0;
 		for(int i = 0; i < 2; i++)
@@ -99,6 +107,7 @@ public class MainScript : MonoBehaviour
 		}
 		var shuffle = (from stimulus in stimuli orderby Guid.NewGuid() select stimulus);
 		stimuli = shuffle.ToList();
+		currentStimulusIndex = 0;
 	}
 
 	private bool showHud = false;
@@ -358,6 +367,8 @@ public class MainScript : MonoBehaviour
 
 					FiniLogger(distLogger, "distance");
 					FiniLogger(targetLogger, "target");
+
+					LoadStimuli();
 				}
 				else
 				{
@@ -366,6 +377,11 @@ public class MainScript : MonoBehaviour
 				}
 			}
 
+		}
+
+		if (Input.GetKeyDown (KeyCode.R))
+		{
+			LoadStimuli();
 		}
 
 		if (Input.GetKeyDown (KeyCode.H))
