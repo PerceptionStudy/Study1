@@ -1,16 +1,15 @@
-using System;
 using UnityEngine;
 using Newtonsoft.Json;
 
-
+using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class Settings : Singleton<Settings>
 {
 	public string settingsFilePath;
 	public string settingsFileName = "scene1_settings.txt";
-	public string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
 	private SettingsValues values;
 
@@ -163,29 +162,109 @@ public class Settings : Singleton<Settings>
 		Settings.SaveSettings();
 		base.OnDestroy();
 	}
+
+	private Rect windowRect = new Rect(20, 20, 225, 0);
+	private const int guiTopOffset = 20;
+	private const int guiDownOffset = 10;
+	private const int guiIncrement = 15;
+	private GUIStyle style = new GUIStyle();
+	
+	void OnGUI() 
+	{
+		windowRect = GUI.Window(0, windowRect, DoMyWindow, "My Window");
+	}
+	
+	Dictionary<string, string> tempSettings = new Dictionary<string, string>();
+	
+	void DoMyWindow(int windowID) 
+	{
+		style.fontSize = 12;
+		style.normal.textColor = Color.white;
+		
+		if(tempSettings.Count() == 0)
+		{
+			tempSettings = Settings.GetDictionarySettings();
+		}
+		
+		int count = 0;
+
+		foreach( KeyValuePair<string, string> kvp in new Dictionary<string, string>(tempSettings) )
+		{
+			GUI.Label(new Rect(10, guiTopOffset + count * guiIncrement, 150, 30), kvp.Key + ": ", style);
+			string stringValue = GUI.TextField(new Rect(175, guiTopOffset + count * guiIncrement, 50, 20), kvp.Value.ToString(), style);
+			stringValue = Regex.Replace(stringValue, @"[^0-9.]", "");
+			
+			if(stringValue != kvp.Value)
+			{
+				tempSettings[kvp.Key] = stringValue;
+			}
+			
+			if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)		
+			{				
+				float tryParse = 0.0f;
+				
+				if(float.TryParse(stringValue, out tryParse))
+				{
+					tempSettings[kvp.Key] = tryParse.ToString();
+				}
+				else
+				{
+					Debug.Log("Input field parsing failed");
+					tempSettings[kvp.Key] = "0";
+				}
+			}
+			
+			count ++;
+		}
+		
+		if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)		
+		{				
+			Debug.Log("Applying and Saving Settings");
+			
+			string json = JsonConvert.SerializeObject(tempSettings);
+			SettingsValues v = JsonConvert.DeserializeObject<SettingsValues>(json);
+			Settings.Values = (SettingsValues)v.Clone();
+			Settings.SaveSettings();
+		}
+		
+		windowRect.height = guiTopOffset + guiDownOffset + count * guiIncrement;
+		
+		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+	}
 }
 
 [System.Serializable]
 public class SettingsValues : ICloneable
 {
 	public float drag = 5.0f; 
-	public float randomForce = 50.0f;
-	
-	public float boxSizeX = 100.0f;
-	public float boxSizeY = 18.0f;
-	public float boxSizeZ = 1.0f;
+	public float randomForce = 1000.0f;	
 
-	public float molScale = 1.0f;
-	public float cameraSize = 10.0f;
+	public float molScale = 20.0f;
+	public float molCount = 1000.0f;
+
+	public float fovealLimit = 500.0f;
+	public float repeat = 2.0f;
+
+	public float duration_1 = 0.0f;
+	public float duration_2 = 0.0f;
+	public float duration_3 = 0.0f;
+	public float duration_4 = 0.0f;
+	public float duration_5 = 0.0f;
+
+	public float amplitude_1 = 0.0f;
+	public float amplitude_2 = 0.0f;
+	public float amplitude_3 = 0.0f;
+	public float amplitude_4 = 0.0f;
+	public float amplitude_5 = 0.0f;
 
 	// Luminance-modulation properties
-	public float interpolationDuration = 1000.0f;
-	public float totalDuration = 10000.0f;
-	public float startHalfWaveLength = 2.0f;
-	public float endHalfWaveLength = 2.0f;
-	public float startAmplitude = 10.0f;
-	public float endAmplitude = 10.0f;	
-	public float amplitudeOffset = 0.0f;
+//	public float interpolationDuration = 1000.0f;
+//	public float totalDuration = 10000.0f;
+//	public float startHalfWaveLength = 2.0f;
+//	public float endHalfWaveLength = 2.0f;
+//	public float startAmplitude = 10.0f;
+//	public float endAmplitude = 10.0f;	
+//	public float amplitudeOffset = 0.0f;
 
 	public object Clone()
 	{
