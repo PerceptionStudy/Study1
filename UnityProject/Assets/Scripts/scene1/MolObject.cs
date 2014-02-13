@@ -10,8 +10,8 @@ public class MolObject : MonoBehaviour
 	private MolColor defaultColor;
 	private MolColor currentColor; 
 
-	private Stopwatch stopWatch = new Stopwatch ();
-	private Stopwatch stopWatch_2 = new Stopwatch ();
+	private Stopwatch stimulusWatch = new Stopwatch ();
+	private Stopwatch waveWatch = new Stopwatch ();
 
 	public static MolObject CreateNewMolObject (Transform parent, string name, MolColor color)
 	{
@@ -55,10 +55,7 @@ public class MolObject : MonoBehaviour
 
 	void Update ()
 	{
-		if (luminanceFlicker)
-		{
-			LuminanceFlickerUpdate (); 
-		}
+		if(stimulus) StimulusUpdate();
 
 		transform.localScale = new Vector3(Settings.Values.molScale, Settings.Values.molScale, Settings.Values.molScale);
 
@@ -96,8 +93,88 @@ public class MolObject : MonoBehaviour
 		rigidbody.position = temp; 
 	}
 
-	private bool up = true;
+	int halfWaveLength = 0;
+	int amplitude = 0;
+	int duration = 0;
+		
+	bool firstWave = false;
+	bool up = true;
+	public bool stimulus = false;
 
+	public void StartStimulus(int waveLength, int amplitude, int duration)
+	{
+		stimulus = true;
+		firstWave = true;
+
+		this.halfWaveLength = waveLength / 2;
+		this.amplitude = amplitude;
+		this.duration = duration;
+
+		stimulusWatch.Start();
+		waveWatch.Start();
+	}
+
+	public void StopStimulus()
+	{
+		stimulus = false; 
+		currentColor = defaultColor; 
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
+
+		stimulusWatch.Stop();
+		stimulusWatch.Reset();
+
+		waveWatch.Stop();
+		waveWatch.Reset();
+	}
+
+	private void StimulusUpdate()
+	{
+		int currentStimulusTime = (int)stimulusWatch.ElapsedMilliseconds;
+		int currentWaveTime = (int)waveWatch.ElapsedMilliseconds;
+
+		if(firstWave)
+		{
+			currentWaveTime += halfWaveLength / 2;
+		}
+
+		float progress = (float) currentWaveTime / halfWaveLength;	
+		float intensityShift = Mathf.Clamp((up) ? progress * 2.0f - 1.0f : (1.0f-progress) * 2.0f - 1.0f, -1.0f, 1.0f) * amplitude;
+		float currentIntensity = Mathf.Clamp(defaultColor.L + intensityShift, 0, 100);		
+
+		currentColor = new MolColor(currentIntensity, defaultColor.a, defaultColor.b);
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba;
+
+		if(currentWaveTime > halfWaveLength)
+		{
+			up = !up;
+			waveWatch.Reset();
+			waveWatch.Start();
+			firstWave = false;
+		}
+
+		if(currentStimulusTime > duration)
+		{
+			StopStimulus();
+		}
+	}
+
+	public void StartLuminanceFlicker()
+	{
+//		luminanceFlicker = true; 
+//
+//		stopWatch.Start (); 
+	}
+
+	public void StopLuminanceFlicker()
+	{
+//		luminanceFlicker = false; 
+//		currentColor = defaultColor; 
+//		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
+//
+//		stopWatch.Reset (); 
+	}
+
+	
 	void LuminanceFlickerUpdate()
 	{		
 //		if(!stopWatch_2.IsRunning) stopWatch_2.Start();
@@ -128,21 +205,5 @@ public class MolObject : MonoBehaviour
 //		{
 //			StopLuminanceFlicker();
 //		}
-	}
-
-	public void StartLuminanceFlicker()
-	{
-//		luminanceFlicker = true; 
-//
-//		stopWatch.Start (); 
-	}
-
-	public void StopLuminanceFlicker()
-	{
-//		luminanceFlicker = false; 
-//		currentColor = defaultColor; 
-//		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
-//
-//		stopWatch.Reset (); 
 	}
 }

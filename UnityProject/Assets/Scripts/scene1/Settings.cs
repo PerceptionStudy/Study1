@@ -240,22 +240,23 @@ public class SettingsValues : ICloneable
 	public float randomForce = 1000.0f;	
 
 	public float molScale = 20.0f;
-	public float molCount = 1000.0f;
+	public float molCount = 500.0f;
 
-	public float fovealLimit = 500.0f;
 	public float repeat = 2.0f;
+	public float fovealLimit = 250.0f;
+	public float waveLength = 100.0f;
 
-	public float duration_1 = 0.0f;
-	public float duration_2 = 0.0f;
-	public float duration_3 = 0.0f;
-	public float duration_4 = 0.0f;
-	public float duration_5 = 0.0f;
+	public float duration_1 = 1000.0f;
+	public float duration_2 = 1000.0f;
+	public float duration_3 = 1000.0f;
+	public float duration_4 = 1000.0f;
+	public float duration_5 = 1000.0f;
 
-	public float amplitude_1 = 0.0f;
-	public float amplitude_2 = 0.0f;
-	public float amplitude_3 = 0.0f;
-	public float amplitude_4 = 0.0f;
-	public float amplitude_5 = 0.0f;
+	public float amplitude_1 = 25.0f;
+	public float amplitude_2 = 25.0f;
+	public float amplitude_3 = 25.0f;
+	public float amplitude_4 = 25.0f;
+	public float amplitude_5 = 25.0f;
 
 	// Luminance-modulation properties
 //	public float interpolationDuration = 1000.0f;

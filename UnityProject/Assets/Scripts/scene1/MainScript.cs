@@ -11,16 +11,16 @@ using System.Collections.Generic;
 
 public class Stimulus
 {
-	int stimulusId;
-	int focusRegion;
-	int repeatId;
-	int duration;
-	int amplitude;
+	public int stimulusId;
+	public int visionArea;
+	public int repeatId;
+	public int duration;
+	public int amplitude;
 
-	public Stimulus(int stimulusId, int focusRegion, int repeatId, int duration, int amplitude)
+	public Stimulus(int stimulusId, int visionArea, int repeatId, int duration, int amplitude)
 	{
 		this.stimulusId = stimulusId;
-		this.focusRegion = focusRegion;
+		this.visionArea = visionArea;
 		this.repeatId = repeatId;
 		this.duration = duration;
 		this.amplitude = amplitude;
@@ -29,9 +29,11 @@ public class Stimulus
 
 public class MainScript : MonoBehaviour 
 {
-	private bool initiated = false;
+	private bool initiated = false;	
+	private int currentStimulusIndex = 0;
+	private Stimulus currentStimulus = null;
+	private MolObject stimulusObject = null; 	
 
-	private MolObject focusObject; 	
 	private GameObject collideBox;
 
 	// isoluminent RGB tripels from http://www.cs.ubc.ca/~tmm/courses/infovis/morereadings/FaceLumin.pdf (Figure 7)
@@ -49,7 +51,7 @@ public class MainScript : MonoBehaviour
 			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
 
 		initiated = true;
-		focusObject = null; 
+		stimulusObject = null; 
 	}
 
 	void LoadStimuli ()
@@ -148,10 +150,60 @@ public class MainScript : MonoBehaviour
 			Application.Quit();
 		}
 
-		if (Input.GetKeyDown ("f")) 
+		if (Input.GetKeyDown (KeyCode.Space))
 		{
-			InitLuminanceFlicker (GetRandomMolObject ());
+			if(stimulusObject == null)
+			{
+				StartNewStimulus();
+				currentStimulusIndex ++;
+			}
 		}
+
+		if(stimulusObject != null)
+		{
+			if(!stimulusObject.stimulus)
+			{
+				print("Stop stimulus");
+				stimulusObject = null;
+				currentStimulus = null;
+			}
+		}
+	}
+
+	void StartNewStimulus ()
+	{
+		currentStimulus = stimuli[currentStimulusIndex];
+
+		var shuffle = (from mol in molObjects orderby  Guid.NewGuid() select mol);
+		molObjects = shuffle.ToArray();
+
+		foreach(MolObject mol in molObjects)
+		{
+			if(currentStimulus.visionArea == 0)
+			{
+				if(Math.Abs(mol.transform.position.x) < Settings.Values.fovealLimit )
+				{
+					stimulusObject = mol;
+					break;
+				}
+			}
+			else
+			{
+				if(Math.Abs(mol.transform.position.x) > Settings.Values.fovealLimit )
+				{
+					stimulusObject = mol;
+					break;
+				}
+			}
+		}
+
+		if(stimulusObject == null)
+		{
+			throw new System.Exception("Did not find scene element that matches the stimulus properties");
+		}
+
+		stimulusObject.StartStimulus((int)Settings.Values.waveLength, currentStimulus.amplitude, currentStimulus.duration);
+		print("Start stimulus, visionArea: " + currentStimulus.visionArea + " halfWaveLength: " + Settings.Values.waveLength + " amplitude: " + currentStimulus.amplitude + " duration: " + currentStimulus.duration + " distance: " +stimulusObject.gameObject.transform.position.x);
 	}
 
 	MolObject GetRandomMolObject()
@@ -161,13 +213,13 @@ public class MainScript : MonoBehaviour
 
 	void InitLuminanceFlicker(MolObject molObject)
 	{
-		if (focusObject != null) 
+		if (stimulusObject != null) 
 		{
-			focusObject.StopLuminanceFlicker (); 
+			stimulusObject.StopLuminanceFlicker (); 
 		}
 
 		molObject.StartLuminanceFlicker (); 
-		focusObject = molObject; 
+		stimulusObject = molObject; 
 	}
 
 	void FixedUpdate()
