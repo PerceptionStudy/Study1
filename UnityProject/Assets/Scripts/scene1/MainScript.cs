@@ -96,6 +96,15 @@ public class MainScript : MonoBehaviour
 
 	public void CreateMolObjects()
 	{
+		// Destroy previous game objects
+		if(molObjects != null)
+		{
+			foreach(MolObject obj in molObjects)
+			{
+				Destroy(obj.gameObject);
+			}
+		}
+
 		molObjects = new MolObject[(int)Settings.Values.molCount];		
 
 		for(int i = 0; i< (int)Settings.Values.molCount; i++)
@@ -138,6 +147,29 @@ public class MainScript : MonoBehaviour
 		var shuffle = (from stimulus in stimuli orderby Guid.NewGuid() select stimulus);
 		stimuli = shuffle.ToList();
 		currentStimulusIndex = 0;
+	}
+
+	void LoadScene ()
+	{
+		LoadStimuli();		
+		CreateMolObjects();
+	}
+	
+	void Start () 
+	{
+		if (!initiated) 
+		{
+			BoxSize.x = Screen.width;
+			BoxSize.y = Screen.height;
+			BoxSize.z = Settings.Values.molScale * 2;
+			
+			collideBox = GameObject.Find("Box Object");
+			collideBox.transform.localScale = new Vector3(BoxSize.x, BoxSize.y, BoxSize.z);
+			
+			Settings.LoadSettings();
+			
+			LoadScene();
+		}
 	}
 
 	private bool showHud = false;
@@ -293,24 +325,7 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	void Start () 
-	{
-		if (!initiated) 
-		{
-			BoxSize.x = Screen.width;
-			BoxSize.y = Screen.height;
-			BoxSize.z = Settings.Values.molScale * 2;
-			
-			collideBox = GameObject.Find("Box Object");
-			collideBox.transform.localScale = new Vector3(BoxSize.x, BoxSize.y, BoxSize.z);
-			
-			Settings.LoadSettings();
 
-			LoadStimuli();
-
-			CreateMolObjects();
-		}
-	}
 
 	LogLib.Logger<int> CreateLogger(String name)
 	{
@@ -398,7 +413,7 @@ public class MainScript : MonoBehaviour
 					FiniLogger(distLogger, "distance");
 					FiniLogger(targetLogger, "target");
 
-					LoadStimuli();
+					LoadScene();
 				}
 				else
 				{
@@ -411,7 +426,7 @@ public class MainScript : MonoBehaviour
 
 		if (Input.GetKeyDown (KeyCode.R))
 		{
-			LoadStimuli();
+			LoadScene();
 		}
 
 		if (Input.GetKeyDown (KeyCode.H))
@@ -491,7 +506,6 @@ public class MainScript : MonoBehaviour
 
 //		stimulusObject = null;
 //		currentStimulus = null;
-
 		
 		Screen.showCursor = true; 
 	}
