@@ -52,7 +52,37 @@ public class MainScript : MonoBehaviour
 	private List<Stimulus> stimuli = new List<Stimulus>();
 
 	// isoluminent RGB tripels from http://www.cs.ubc.ca/~tmm/courses/infovis/morereadings/FaceLumin.pdf (Figure 7)
-	public static Color[] MolColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
+	//public static Color[] MolColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
+	// 12 qualitative RGB values from http://colorbrewer2.org/
+//	public static Color[] MolColors = {
+//		new Color(141.0f,211.0f,199.0f), 
+//		new Color(255.0f,255.0f,179.0f), 
+//		new Color(190.0f,186.0f,218.0f), 
+//		new Color(251.0f,128.0f,114.0f), 
+//		new Color(128.0f,177.0f,211.0f), 
+//		new Color(253.0f,180.0f,98.0f), 
+//		new Color(179.0f,222.0f,105.0f), 
+//		new Color(252.0f,205.0f,229.0f), 
+//		new Color(217.0f,217.0f,217.0f), 
+//		new Color(188.0f,128.0f,189.0f), 
+//		new Color(204.0f,235.0f,197.0f), 
+//		new Color(255.0f,237.0f,111.0f)
+//	}; 
+	public static Color[] MolColors = {
+		new Color(166,206,227), 
+		new Color(31,120,180), 
+		new Color(178,223,138), 
+		new Color(51,160,44), 
+		new Color(251,154,153), 
+		new Color(227,26,28), 
+		new Color(253,191,111), 
+		new Color(255,127,0), 
+		new Color(202,178,214), 
+		new Color(106,61,154), 
+		new Color(255,255,153), 
+		new Color(177,89,40)
+	}; 
+
 	public static Vector3 BoxSize = new Vector3();
 	public static bool Animate = false;
 

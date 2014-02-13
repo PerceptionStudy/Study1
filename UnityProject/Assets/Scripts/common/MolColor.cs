@@ -24,6 +24,14 @@ public class MolColor {
 		rgba = c;
 		rgba.a = 1.0f; 
 
+		// correct 0-255 ranges to 0-1, if necessary
+		if(rgba.r > 1.0f || rgba.g > 1.0f || rgba.b > 1.0f)
+		{
+			rgba.r /= 255.0f; 
+			rgba.g /= 255.0f; 
+			rgba.b /= 255.0f; 
+		}
+
 		float r_ = correctRGB (rgba.r); 
 		float g_ = correctRGB (rgba.g); 
 		float b_ = correctRGB (rgba.b); 
