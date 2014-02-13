@@ -130,11 +130,12 @@ public class MainScript : MonoBehaviour
 		if(time < 1000) texName = "3";
 		GUI.DrawTexture (new Rect (0.0f, 0.0f, Screen.width, Screen.height), (UnityEngine.Texture)Resources.Load (texName)); 
 
-		if(time >= 3000){
+		if(time >= 3000)
+		{
 			countdown = false; 
 			stimulus = true; 
 
-			// TODO: load stimulus
+			//TODO start new stimulus here
 
 			stopWatch.Stop (); 
 			stopWatch.Reset (); 
@@ -306,21 +307,6 @@ public class MainScript : MonoBehaviour
 				intermediate = false; 
 			}
 		}
-
-		if (Input.GetKeyDown ("s") && Input.GetKey(KeyCode.LeftShift))
-		{
-			InitLuminanceFlicker (GetRandomMolObject ());
-		}
-
-		if(stimulusObject != null)
-		{
-			if(!stimulusObject.stimulus)
-			{
-				print("Stop stimulus");
-				stimulusObject = null;
-				currentStimulus = null;
-			}
-		}
 	}
 
 	void StartNewStimulus ()
@@ -357,22 +343,6 @@ public class MainScript : MonoBehaviour
 
 		stimulusObject.StartStimulus((int)Settings.Values.waveLength, currentStimulus.amplitude, currentStimulus.duration);
 		print("Start stimulus, visionArea: " + currentStimulus.visionArea + " halfWaveLength: " + Settings.Values.waveLength + " amplitude: " + currentStimulus.amplitude + " duration: " + currentStimulus.duration + " distance: " +stimulusObject.gameObject.transform.position.x);
-	}
-
-	MolObject GetRandomMolObject()
-	{
-		return molObjects [UnityEngine.Random.Range (0, molObjects.Count () - 1)]; 
-	}
-
-	void InitLuminanceFlicker(MolObject molObject)
-	{
-		if (stimulusObject != null) 
-		{
-			stimulusObject.StopLuminanceFlicker (); 
-		}
-
-		molObject.StartLuminanceFlicker (); 
-		stimulusObject = molObject; 
 	}
 
 	void FixedUpdate()
