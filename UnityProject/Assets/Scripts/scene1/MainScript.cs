@@ -163,7 +163,8 @@ public class MainScript : MonoBehaviour
 		{
 			if(userID.Length > 0)
 			{
-				InitLogger(); 
+				distLogger = CreateLogger("distance"); 
+				targetLogger = CreateLogger ("target"); 
 				setupGUI = false; 
 				intermediate = true; 
 			}
@@ -224,14 +225,20 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	void InitLogger()
+	LogLib.Logger<int> CreateLogger(String name)
 	{
-		distLogger = new LogLib.Logger<int>("distance", userID, conditionID); 
-		targetLogger = new LogLib.Logger<int>("target", userID, conditionID);
+		LogLib.Logger<int> logger = new LogLib.Logger<int> (name, userID, conditionID); 
+		// TODO: hardcoded for pilot1
+		logger.AddFactor ("rep"); 
+		logger.AddFactor ("ecc"); 
+		logger.AddFactor ("dur"); 
+		logger.AddFactor ("amp"); 
+		return logger; 
 	}
 
 	void FiniLogger(LogLib.Logger<int> logger, String name)
 	{
+		// TODO: this method needs to be called before shutting down
 		string fileName = name + ".csv"; 
 		StreamWriter fileWriter = new StreamWriter (fileName, true); 
 		bool writeHeader = (new FileInfo(fileName).Length == 0); 
@@ -247,6 +254,8 @@ public class MainScript : MonoBehaviour
 		
 		stimulus = false; 
 		stimulusEnd = true; 
+
+		Screen.showCursor = true; 
 	}
 
 	void Update () 
@@ -283,8 +292,7 @@ public class MainScript : MonoBehaviour
 			if(!stimulusEnd){
 				// TODO: log mouse position, noTarget value, distance mouse position -- last known center of target
 				// TODO: check if there are any more stimuli, otherwise close the program
-				intermediate = true; 
-			}
+				intermediate = true; 			}
 
 		}
 
@@ -301,6 +309,7 @@ public class MainScript : MonoBehaviour
 				stopWatch.Reset(); 
 				stopWatch.Start (); 
 				intermediate = false; 
+				Screen.showCursor = false; 
 			}
 		}
 
