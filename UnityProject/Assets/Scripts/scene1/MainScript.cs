@@ -37,7 +37,6 @@ public class MainScript : MonoBehaviour
 	private bool setupGUI = true; 
 	private bool countdown = false; 
 	private bool intermediate = false; 
-	private bool settingsGUI = false; 
 	private bool stimulus = false; 
 	private bool stimulusEnd = false; 
 	private MolObject[] molObjects;
@@ -46,13 +45,12 @@ public class MainScript : MonoBehaviour
 	private List<Stimulus> stimuli = new List<Stimulus>();
 
 	// isoluminent RGB tripels from http://www.cs.ubc.ca/~tmm/courses/infovis/morereadings/FaceLumin.pdf (Figure 7)
-	public static Color[] molColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
+	public static Color[] MolColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
 	public static Vector3 BoxSize = new Vector3();
+	public static bool Animate = false;
 
 	private string userID = ""; 
 	private string conditionID = ""; 
-
-	public int stimulusTimeout = 5000; 
 
 	private Stopwatch stopWatch = new Stopwatch ();
 
@@ -64,7 +62,7 @@ public class MainScript : MonoBehaviour
 		molObjects = new MolObject[(int)Settings.Values.molCount];		
 
 		for(int i = 0; i< (int)Settings.Values.molCount; i++)
-			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
+			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, new MolColor(MolColors[UnityEngine.Random.Range(0, MolColors.Count ())]));	
 
 		initiated = true;
 		stimulusObject = null; 
@@ -98,6 +96,8 @@ public class MainScript : MonoBehaviour
 
 	void OnGUI()
 	{
+		GUI.depth = 1;
+
 		if(setupGUI){
 			GUI.Window (1, new Rect(0.0f, 0.0f, Screen.width, Screen.height), SetupGUI, "Setup"); 
 		}
@@ -114,8 +114,6 @@ public class MainScript : MonoBehaviour
 			GUI.Window (4, new Rect(0.0f, 0.0f, Screen.width, Screen.height), StimulusEndGUI, "Stimulus Finished: Click where you spotted the target or press 'n' if you did not see any target"); 
 		}
 	}
-
-	Dictionary<string, string> tempSettings = new Dictionary<string, string>();
 
 	void StimulusEndGUI(int windowID)
 	{
@@ -135,7 +133,7 @@ public class MainScript : MonoBehaviour
 			countdown = false; 
 			stimulus = true; 
 
-			//TODO start new stimulus here
+			StartNewStimulus();
 
 			stopWatch.Stop (); 
 			stopWatch.Reset (); 
@@ -242,17 +240,6 @@ public class MainScript : MonoBehaviour
 		logger.WriteSingleRowCSV(fileWriter, writeHeader);
 	}
 
-	void StopStimulus()
-	{
-		stopWatch.Stop(); 
-		stopWatch.Reset (); 
-		
-		// TODO: freeze stimulus 
-		
-		stimulus = false; 
-		stimulusEnd = true; 
-	}
-
 	void Update () 
 	{
 		Camera.main.orthographicSize = Screen.height * 0.5f;
@@ -266,7 +253,7 @@ public class MainScript : MonoBehaviour
 		if(stimulus)
 		{
 			int time = (int)stopWatch.ElapsedMilliseconds; 
-			if(time >= stimulusTimeout || Input.GetKeyDown("space"))
+			if(time >= currentStimulus.duration || Input.GetKeyDown("space"))
 			{
 				StopStimulus(); 
 			}
@@ -276,18 +263,34 @@ public class MainScript : MonoBehaviour
 		{
 			Vector3 mousePos = new Vector3(-1.0f, -1.0f, -1.0f); 
 			bool noTarget = false; 
-			if(Input.GetMouseButtonUp(0)){
+			if(Input.GetMouseButtonUp(0))
+			{
 				mousePos = Input.mousePosition; 
 				stimulusEnd = false; 
 			}
-			if(Input.GetKeyDown ("n")){
+			if(Input.GetKeyDown ("n"))
+			{
 				noTarget = true; 
 				stimulusEnd = false; 
 			}
-			if(!stimulusEnd){
+			if(!stimulusEnd)
+			{
 				// TODO: log mouse position, noTarget value, distance mouse position -- last known center of target
-				// TODO: check if there are any more stimuli, otherwise close the program
-				intermediate = true; 
+				// Todo: fill the logger list
+
+				if(currentStimulusIndex >= stimuli.Count())
+				{
+					setupGUI = true; 
+					countdown = false; 
+					intermediate = false; 
+					stimulus = false; 
+					stimulusEnd = false; 
+
+					FiniLogger(distLogger, "distance");
+					FiniLogger(targetLogger, "target");
+				}
+				else
+					intermediate = true; 
 			}
 
 		}
@@ -311,6 +314,8 @@ public class MainScript : MonoBehaviour
 
 	void StartNewStimulus ()
 	{
+		Animate = true;
+
 		currentStimulus = stimuli[currentStimulusIndex];
 
 		var shuffle = (from mol in molObjects orderby  Guid.NewGuid() select mol);
@@ -341,8 +346,26 @@ public class MainScript : MonoBehaviour
 			throw new System.Exception("Did not find scene element that matches the stimulus properties");
 		}
 
-		stimulusObject.StartStimulus((int)Settings.Values.waveLength, currentStimulus.amplitude, currentStimulus.duration);
+		stimulusObject.StartStimulus((int)Settings.Values.waveLength, currentStimulus.amplitude);
 		print("Start stimulus, visionArea: " + currentStimulus.visionArea + " halfWaveLength: " + Settings.Values.waveLength + " amplitude: " + currentStimulus.amplitude + " duration: " + currentStimulus.duration + " distance: " +stimulusObject.gameObject.transform.position.x);
+
+		currentStimulusIndex ++;
+	}
+
+	void StopStimulus()
+	{
+		Animate = false;
+
+		stopWatch.Stop(); 
+		stopWatch.Reset (); 
+		
+		stimulusObject.StopStimulus();
+		
+		stimulus = false; 
+		stimulusEnd = true; 
+
+		stimulusObject = null;
+		currentStimulus = null;
 	}
 
 	void FixedUpdate()

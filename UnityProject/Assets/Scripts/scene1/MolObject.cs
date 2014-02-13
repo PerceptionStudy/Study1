@@ -5,13 +5,18 @@ using System.Diagnostics;
 public class MolObject : MonoBehaviour
 {
 	public bool animate = true;
-	public bool luminanceFlicker = false;
+
+	private bool up = true;
+	private bool stimulus = false;	
+	private bool firstWave = false;
+
+	private int halfWaveLength = 0;
+	private int amplitude = 0;
 
 	private MolColor defaultColor;
 	private MolColor currentColor; 
 
-	private Stopwatch stimulusWatch = new Stopwatch ();
-	private Stopwatch waveWatch = new Stopwatch ();
+	private Stopwatch stopWatch = new Stopwatch ();	
 
 	public static MolObject CreateNewMolObject (Transform parent, string name, MolColor color)
 	{
@@ -42,15 +47,66 @@ public class MolObject : MonoBehaviour
 
 	void FixedUpdate ()
 	{
-		if (!animate)
+		if (!MainScript.Animate)
+		{
+			rigidbody.drag = 10000;
 			return;
-
-		rigidbody.drag = Settings.Values.drag;
+		}
 
 		Vector3 force = UnityEngine.Random.insideUnitSphere * Settings.Values.randomForce;
 		force.z = 0;
 
-		rigidbody.AddForce (force);
+		rigidbody.AddForce (force);		
+		rigidbody.drag = Settings.Values.drag;
+	}
+	
+	public void StartStimulus(int waveLength, int amplitude)
+	{
+		stimulus = true;
+		firstWave = true;
+		
+		this.halfWaveLength = waveLength / 2;
+		this.amplitude = amplitude;
+		
+		stopWatch.Reset();
+		stopWatch.Start();
+	}
+	
+	public void StopStimulus()
+	{
+		stimulus = false; 
+		firstWave = false;
+		
+		currentColor = defaultColor; 
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
+		
+		stopWatch.Stop();
+		stopWatch.Reset();
+	}
+	
+	private void StimulusUpdate()
+	{
+		int currentWaveTime = (int)stopWatch.ElapsedMilliseconds;
+		
+		if(firstWave)
+		{
+			currentWaveTime += halfWaveLength / 2;
+		}
+		
+		float progress = (float) currentWaveTime / halfWaveLength;	
+		float intensityShift = Mathf.Clamp((up) ? progress * 2.0f - 1.0f : (1.0f-progress) * 2.0f - 1.0f, -1.0f, 1.0f) * amplitude;
+		float currentIntensity = Mathf.Clamp(defaultColor.L + intensityShift, 0, 100);		
+		
+		currentColor = new MolColor(currentIntensity, defaultColor.a, defaultColor.b);
+		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba;
+		
+		if(currentWaveTime > halfWaveLength)
+		{
+			up = !up;
+			stopWatch.Reset();
+			stopWatch.Start();
+			firstWave = false;
+		}
 	}
 
 	void Update ()
@@ -92,91 +148,9 @@ public class MolObject : MonoBehaviour
 		
 		rigidbody.position = temp; 
 	}
-
-	int halfWaveLength = 0;
-	int amplitude = 0;
-	int duration = 0;
-		
-	bool firstWave = false;
-	bool up = true;
-	public bool stimulus = false;
-
-	public void StartStimulus(int waveLength, int amplitude, int duration)
-	{
-		stimulus = true;
-		firstWave = true;
-
-		this.halfWaveLength = waveLength / 2;
-		this.amplitude = amplitude;
-		this.duration = duration;
-
-		stimulusWatch.Start();
-		waveWatch.Start();
-	}
-
-	public void StopStimulus()
-	{
-		stimulus = false; 
-		currentColor = defaultColor; 
-		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
-
-		stimulusWatch.Stop();
-		stimulusWatch.Reset();
-
-		waveWatch.Stop();
-		waveWatch.Reset();
-	}
-
-	private void StimulusUpdate()
-	{
-		int currentStimulusTime = (int)stimulusWatch.ElapsedMilliseconds;
-		int currentWaveTime = (int)waveWatch.ElapsedMilliseconds;
-
-		if(firstWave)
-		{
-			currentWaveTime += halfWaveLength / 2;
-		}
-
-		float progress = (float) currentWaveTime / halfWaveLength;	
-		float intensityShift = Mathf.Clamp((up) ? progress * 2.0f - 1.0f : (1.0f-progress) * 2.0f - 1.0f, -1.0f, 1.0f) * amplitude;
-		float currentIntensity = Mathf.Clamp(defaultColor.L + intensityShift, 0, 100);		
-
-		currentColor = new MolColor(currentIntensity, defaultColor.a, defaultColor.b);
-		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba;
-
-		if(currentWaveTime > halfWaveLength)
-		{
-			up = !up;
-			waveWatch.Reset();
-			waveWatch.Start();
-			firstWave = false;
-		}
-
-		if(currentStimulusTime > duration)
-		{
-			StopStimulus();
-		}
-	}
-
-	public void StartLuminanceFlicker()
-	{
-//		luminanceFlicker = true; 
-//
-//		stopWatch.Start (); 
-	}
-
-	public void StopLuminanceFlicker()
-	{
-//		luminanceFlicker = false; 
-//		currentColor = defaultColor; 
-//		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba; 
-//
-//		stopWatch.Reset (); 
-	}
-
 	
-	void LuminanceFlickerUpdate()
-	{		
+//	void LuminanceFlickerUpdate()
+//	{		
 //		if(!stopWatch_2.IsRunning) stopWatch_2.Start();
 //
 //		int currentTimeMillis = (int)stopWatch.ElapsedMilliseconds;
@@ -205,5 +179,5 @@ public class MolObject : MonoBehaviour
 //		{
 //			StopLuminanceFlicker();
 //		}
-	}
+//	}
 }
