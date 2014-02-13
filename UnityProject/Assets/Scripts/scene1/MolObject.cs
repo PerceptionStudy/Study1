@@ -109,6 +109,11 @@ public class MolObject : MonoBehaviour
 		}
 	}
 
+
+	int frameCount = 0;
+	Vector3 lastPos = new Vector3();
+	float speedAcc = 0; 
+
 	void Update ()
 	{
 		if(stimulus) StimulusUpdate();
@@ -147,6 +152,21 @@ public class MolObject : MonoBehaviour
 //		}
 		
 		rigidbody.position = temp; 
+
+		if (!animate)
+		{
+			speedAcc += Vector3.Distance(transform.position, lastPos);
+			frameCount ++;
+
+			if(frameCount > 20)
+			{
+				print (speedAcc / (float)frameCount);
+				speedAcc = 0;
+				frameCount = 0;
+			}
+
+			lastPos = transform.position;
+		}
 	}
 	
 //	void LuminanceFlickerUpdate()

@@ -153,6 +153,12 @@ public class MainScript : MonoBehaviour
 	{
 		LoadStimuli();		
 		CreateMolObjects();
+		
+		setupGUI = true; 
+		countdown = false; 
+		intermediate = false; 
+		stimulus = false; 
+		stimulusEnd = false; 
 	}
 	
 	void Start () 
@@ -264,8 +270,6 @@ public class MainScript : MonoBehaviour
 		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 	}
 
-
-
 	void StimulusEndGUI(int windowID)
 	{
 		GUI.DrawTexture (new Rect (0.0f, 0.0f, Screen.width, Screen.height), (UnityEngine.Texture)Resources.Load ("stimulusEnd")); 
@@ -324,8 +328,6 @@ public class MainScript : MonoBehaviour
 			}
 		}
 	}
-
-
 
 	LogLib.Logger<int> CreateLogger(String name)
 	{
@@ -404,12 +406,6 @@ public class MainScript : MonoBehaviour
 
 				if(currentStimulusIndex >= stimuli.Count())
 				{
-					setupGUI = true; 
-					countdown = false; 
-					intermediate = false; 
-					stimulus = false; 
-					stimulusEnd = false; 
-
 					FiniLogger(distLogger, "distance");
 					FiniLogger(targetLogger, "target");
 
