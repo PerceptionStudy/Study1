@@ -4,25 +4,32 @@
 using UnityEditor;
 #endif
 
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
+using System; 
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.IO; 
 using System.Diagnostics;
+
+public class Stimulus
+{
+	int stimulusId;
+	int focusRegion;
+	int repeatId;
+	int duration;
+	int amplitude;
+
+	public Stimulus(int stimulusId, int focusRegion, int repeatId, int duration, int amplitude)
+	{
+		this.stimulusId = stimulusId;
+		this.focusRegion = focusRegion;
+		this.repeatId = repeatId;
+		this.duration = duration;
+		this.amplitude = amplitude;
+	}
+}
 
 public class MainScript : MonoBehaviour 
 {
-	public int count = 0;
-
-	public string modeText = ""; 
-	public string parameterValueText = ""; 
-	public int stepWidth = 10; 
-	public int currParameterValue = 0; 
-
-	public delegate void AdjustParamterDelegate(int step); 
-	public AdjustParamterDelegate adjustParamFunc = null;  
-
 	private bool initiated = false;
 	private bool setupGUI = true; 
 	private bool countdown = false; 
@@ -32,17 +39,17 @@ public class MainScript : MonoBehaviour
 	private bool stimulusEnd = false; 
 	private MolObject[] molObjects;
 	private MolObject focusObject; 
+	private GameObject collideBox;
+	private List<Stimulus> stimuli = new List<Stimulus>();
 
-	//static Color[] molColors = {Color.blue, Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta}; 
 	// isoluminent RGB tripels from http://www.cs.ubc.ca/~tmm/courses/infovis/morereadings/FaceLumin.pdf (Figure 7)
-	static Color[] molColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
-	//static Color[] molColors = {Color.blue, Color.green, Color.cyan}; 
-	//static Color[] molColors = {Color.magenta}; 
+	public static Color[] molColors = {new Color (0.847f,0.057f,0.057f), new Color(0.000f,0.592f,0.000f), new Color(0.316f,0.316f,0.991f), new Color(0.527f,0.527f,0.00f), new Color(0.000f,0.559f,0.559f), new Color(0.718f,0.000f,0.718f)}; 
+	public static Vector3 BoxSize = new Vector3();
 
 	private string userID = ""; 
 	private string conditionID = ""; 
 
-	public int stimulusTimeout = 2000; 
+	public int stimulusTimeout = 5000; 
 
 	private Stopwatch stopWatch = new Stopwatch ();
 
@@ -51,24 +58,42 @@ public class MainScript : MonoBehaviour
 
 	public void CreateMolObjects()
 	{
+		molObjects = new MolObject[(int)Settings.Values.molCount];		
 
-		molObjects = new MolObject[count];		
-
-		for(int i = 0; i< count; i++)
+		for(int i = 0; i< (int)Settings.Values.molCount; i++)
 			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
 
 		initiated = true;
-
 		focusObject = null; 
 	}
 
-	private Rect windowRect = new Rect(20, 20, 225, 0);
-	private const int guiTopOffset = 20;
-	private const int guiDownOffset = 10;
-	private const int guiIncrement = 15;
-	private GUIStyle style = new GUIStyle();
+	void LoadStimuli ()
+	{
+		int[] durationValues = {(int)Settings.Values.duration_1, (int)Settings.Values.duration_2, (int)Settings.Values.duration_3, (int)Settings.Values.duration_4, (int)Settings.Values.duration_5};
+		int[] amplitudeValues = {(int)Settings.Values.amplitude_1, (int)Settings.Values.amplitude_2, (int)Settings.Values.amplitude_3, (int)Settings.Values.amplitude_4, (int)Settings.Values.amplitude_5};
 
-	void OnGUI() 
+		int count = 0;
+		for(int i = 0; i < 2; i++)
+		{
+			for(int j = 0; j < Settings.Values.repeat; j++)
+			{
+				for(int k = 0; k < durationValues.Count(); k++)
+				{
+					for(int l = 0; l < amplitudeValues.Count(); l++)
+					{
+						Stimulus stimulus = new Stimulus(count, i, j, durationValues[k], amplitudeValues[l]);
+						stimuli.Add(stimulus);
+
+						count ++;
+					}
+				}
+			}
+		}
+		var shuffle = (from stimulus in stimuli orderby Guid.NewGuid() select stimulus);
+		stimuli = shuffle.ToList();
+	}
+
+	void OnGUI()
 	{
 		if(setupGUI){
 			GUI.Window (1, new Rect(0.0f, 0.0f, Screen.width, Screen.height), SetupGUI, "Setup"); 
@@ -84,10 +109,6 @@ public class MainScript : MonoBehaviour
 
 		if(stimulusEnd){
 			GUI.Window (4, new Rect(0.0f, 0.0f, Screen.width, Screen.height), StimulusEndGUI, "Stimulus Finished: Click where you spotted the target or press 'n' if you did not see any target"); 
-		}
-
-		if(settingsGUI){
-			windowRect = GUI.Window(0, windowRect, DoMyWindow, "My Window");
 		}
 	}
 
@@ -149,73 +170,21 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	void DoMyWindow(int windowID) 
-	{
-		style.fontSize = 12;
-		style.normal.textColor = Color.white;
-
-		if(tempSettings.Count() == 0)
-		{
-			tempSettings = Settings.GetDictionarySettings();
-		}
-
-		int count = 0;
-		char[] alphabet = Settings.Instance.alphabet.ToCharArray();
-		Dictionary<string, string> temp = new Dictionary<string, string>(tempSettings);
-
-		foreach( KeyValuePair<string, string> kvp in temp )
-		{
-			GUI.Label(new Rect(10, guiTopOffset + count * guiIncrement, 150, 30), "("+ alphabet[count].ToString() + ")  " + kvp.Key + ": ", style);
-			string stringValue = GUI.TextField(new Rect(175, guiTopOffset + count * guiIncrement, 50, 20), kvp.Value.ToString(), style);
-			stringValue = Regex.Replace(stringValue, @"[^0-9.]", "");
-
-			if(stringValue != kvp.Value)
-			{
-				tempSettings[kvp.Key] = stringValue;
-			}
-
-			if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)		
-			{				
-				float tryParse = 0.0f;
-
-				if(float.TryParse(stringValue, out tryParse))
-				{
-					tempSettings[kvp.Key] = tryParse.ToString();
-				}
-				else
-				{
-					//Debug.Log("Input field parsing failed");
-					tempSettings[kvp.Key] = "0";
-				}
-			}
-
-			count ++;
-		}
-
-		if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)		
-		{				
-			//Debug.Log("Applying and Saving Settings");
-			
-			string json = JsonConvert.SerializeObject(tempSettings);
-			SettingsValues v = JsonConvert.DeserializeObject<SettingsValues>(json);
-			Settings.Values = (SettingsValues)v.Clone();
-			Settings.SaveSettings();
-		}
-		
-		windowRect.height = guiTopOffset + guiDownOffset + count * guiIncrement;
-		
-		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
-	}
-
-	GameObject box;
-
 	void Start () 
 	{
 		if (!initiated) 
 		{
-			box = GameObject.Find("Box Object");
-
+			BoxSize.x = Screen.width;
+			BoxSize.y = Screen.height;
+			BoxSize.z = Settings.Values.molScale * 2;
+			
+			collideBox = GameObject.Find("Box Object");
+			collideBox.transform.localScale = new Vector3(BoxSize.x, BoxSize.y, BoxSize.z);
+			
 			Settings.LoadSettings();
+
+			LoadStimuli();
+
 			CreateMolObjects();
 
 //			LogLib.Logger<int> distLogger = new LogLib.Logger<int>("distance", "TODO:username", ""); 
@@ -261,6 +230,14 @@ public class MainScript : MonoBehaviour
 		targetLogger = new LogLib.Logger<int>("target", userID, conditionID);
 	}
 
+	void FiniLogger(LogLib.Logger<int> logger, String name)
+	{
+		string fileName = name + ".csv"; 
+		StreamWriter fileWriter = new StreamWriter (fileName, true); 
+		bool writeHeader = (new FileInfo(fileName).Length == 0); 
+		logger.WriteSingleRowCSV(fileWriter, writeHeader);
+	}
+
 	void StopStimulus()
 	{
 		stopWatch.Stop(); 
@@ -274,9 +251,13 @@ public class MainScript : MonoBehaviour
 
 	void Update () 
 	{
-		Camera.main.orthographicSize = Settings.Values.cameraSize;
-
-		box.transform.localScale = new Vector3(Settings.Values.boxSizeX, Settings.Values.boxSizeY, Settings.Values.boxSizeZ);
+		Camera.main.orthographicSize = Screen.height * 0.5f;
+		
+		BoxSize.x = Screen.width;
+		BoxSize.y = Screen.height;
+		BoxSize.z = Settings.Values.molScale * 2;
+		
+		collideBox.transform.localScale = new Vector3(BoxSize.x, BoxSize.y, BoxSize.z);
 
 		if(stimulus)
 		{
@@ -309,16 +290,7 @@ public class MainScript : MonoBehaviour
 
 		if (Input.GetKeyDown ("escape"))
 		{
-			if(modeText.Length == 0)
-			{
-				Application.Quit();
-			}
-			else
-			{
-				modeText = ""; 
-				parameterValueText = ""; 
-				adjustParamFunc = null; 
-			}
+			Application.Quit();
 		}
 
 		if(Input.GetKeyDown ("return"))
@@ -334,32 +306,7 @@ public class MainScript : MonoBehaviour
 
 		if (Input.GetKeyDown ("s") && Input.GetKey(KeyCode.LeftShift))
 		{
-			Settings.SaveSettings();
-		}
-
-		if (Input.GetKeyDown ("l") && Input.GetKey(KeyCode.LeftShift))
-		{
-			Settings.LoadSettings();
-		}
-
-		if (Input.GetKeyDown ("f")) {
 			InitLuminanceFlicker (GetRandomMolObject ());
-		}
-	}
-
-	void setCurrentParameter(string name, int step, AdjustParamterDelegate func)
-	{
-		modeText = name; 
-		stepWidth = step; 
-		adjustParamFunc = func; 
-		updateParameter (0); 
-	}
-
-	void updateParameter (int step)
-	{
-		if(adjustParamFunc != null){
-			adjustParamFunc(step);
-			parameterValueText = "" + currParameterValue; 
 		}
 	}
 
