@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text; 
 
 public class Stimulus
 {
@@ -26,6 +27,11 @@ public class Stimulus
 		this.duration = duration;
 		this.amplitude = amplitude;
 	}
+
+	public override string ToString()
+	{
+		return "repetition: " + repeatId + "; visionArea: " + visionArea + "; duration: " + duration + "; amplitude: " + amplitude; 
+	}
 }
 
 public class MainScript : MonoBehaviour 
@@ -40,7 +46,6 @@ public class MainScript : MonoBehaviour
 	private bool stimulus = false; 
 	private bool stimulusEnd = false; 
 	private MolObject[] molObjects;
-	private MolObject focusObject; 
 	private GameObject collideBox;
 	private List<Stimulus> stimuli = new List<Stimulus>();
 
@@ -74,13 +79,13 @@ public class MainScript : MonoBehaviour
 		int[] amplitudeValues = {(int)Settings.Values.amplitude_1, (int)Settings.Values.amplitude_2, (int)Settings.Values.amplitude_3, (int)Settings.Values.amplitude_4, (int)Settings.Values.amplitude_5};
 
 		int count = 0;
-		for(int i = 0; i < 2; i++)
+		for(int i = 0; i < 1/*2*/; i++)
 		{
-			for(int j = 0; j < Settings.Values.repeat; j++)
+			for(int j = 0; j < 1 /*Settings.Values.repeat*/; j++)
 			{
-				for(int k = 0; k < durationValues.Count(); k++)
+				for(int k = 0; k < 2/*durationValues.Count()*/; k++)
 				{
-					for(int l = 0; l < amplitudeValues.Count(); l++)
+					for(int l = 0; l < 2/*amplitudeValues.Count()*/; l++)
 					{
 						Stimulus stimulus = new Stimulus(count, i, j, durationValues[k], amplitudeValues[l]);
 						stimuli.Add(stimulus);
@@ -189,41 +194,6 @@ public class MainScript : MonoBehaviour
 			LoadStimuli();
 
 			CreateMolObjects();
-
-//			LogLib.Logger<int> distLogger = new LogLib.Logger<int>("distance", "TODO:username", ""); 
-//			distLogger.AddFactor("rep"); 
-//			distLogger.AddFactor("ecc"); 
-//			// TODO: add
-//			// distLogger.AddFactor("dur"); 
-//			// distLogger.AddFactor("amp"); 
-//
-//			// TODO: remove (just a test) 
-//			distLogger.NewEntry(); 
-//			distLogger.Log ("rep", "1"); 
-//			distLogger.Log ("ecc", "F"); 
-//			distLogger.Log (1); 
-//
-//			distLogger.NewEntry(); 
-//			distLogger.Log ("rep", "1"); 
-//			distLogger.Log ("ecc", "P"); 
-//			distLogger.Log (2); 
-//
-//			distLogger.NewEntry(); 
-//			distLogger.Log ("rep", "2"); 
-//			distLogger.Log ("ecc", "P"); 
-//			distLogger.Log (4); 
-//
-//			distLogger.NewEntry(); 
-//			distLogger.Log ("rep", "2"); 
-//			distLogger.Log ("ecc", "F"); 
-//			distLogger.Log (3); 
-//
-//			// file will be written to UnityProject folder
-//			const string fileName = "distanceTest.csv"; 
-//			StreamWriter fileWriter = new StreamWriter(fileName, true); 
-//			bool writeHeader = (new FileInfo(fileName).Length == 0); 
-//			distLogger.WriteSingleRowCSV(fileWriter, writeHeader);
-//			// TODO: end test
 		}
 	}
 
@@ -240,24 +210,20 @@ public class MainScript : MonoBehaviour
 
 	void FiniLogger(LogLib.Logger<int> logger, String name)
 	{
-		// TODO: this method needs to be called before shutting down
 		string fileName = name + ".csv"; 
 		StreamWriter fileWriter = new StreamWriter (fileName, true); 
 		bool writeHeader = (new FileInfo(fileName).Length == 0); 
 		logger.WriteSingleRowCSV(fileWriter, writeHeader);
 	}
 
-	void StopStimulus()
+	void Log(LogLib.Logger<int> logger, Stimulus stimulus, int value)
 	{
-		stopWatch.Stop(); 
-		stopWatch.Reset (); 
-		
-		// TODO: freeze stimulus 
-		
-		stimulus = false; 
-		stimulusEnd = true; 
-
-		Screen.showCursor = true; 
+		logger.NewEntry(); 
+		logger.Log ("rep", stimulus.repeatId.ToString()); 
+		logger.Log ("ecc", stimulus.visionArea.ToString ()); 
+		logger.Log ("dur", stimulus.duration.ToString ()); 
+		logger.Log ("amp", stimulus.amplitude.ToString ()); 
+		logger.Log (value); 
 	}
 
 	void Update () 
@@ -282,21 +248,29 @@ public class MainScript : MonoBehaviour
 		if(stimulusEnd)
 		{
 			Vector3 mousePos = new Vector3(-1.0f, -1.0f, -1.0f); 
-			bool noTarget = false; 
+			bool targetFound = false; 
 			if(Input.GetMouseButtonUp(0))
 			{
 				mousePos = Input.mousePosition; 
+				mousePos.x -= Screen.width / 2; 
+				mousePos.y -= Screen.height / 2; 
 				stimulusEnd = false; 
+				targetFound = true; 
 			}
 			if(Input.GetKeyDown ("n"))
 			{
-				noTarget = true; 
 				stimulusEnd = false; 
 			}
 			if(!stimulusEnd)
 			{
-				// TODO: log mouse position, noTarget value, distance mouse position -- last known center of target
-				// Todo: fill the logger list
+				int dist = -1; 
+				if(targetFound)
+					dist = (int)(Vector3.Distance(stimulusObject.transform.position, mousePos));
+			
+				Log (distLogger, currentStimulus, dist); 
+				Log (targetLogger, currentStimulus, Convert.ToInt32(targetFound)); 
+
+				print ("Stimulus: " + currentStimulus + ": distance: " + dist + " -- target: " + targetFound); 
 
 				if(currentStimulusIndex >= stimuli.Count())
 				{
@@ -310,7 +284,10 @@ public class MainScript : MonoBehaviour
 					FiniLogger(targetLogger, "target");
 				}
 				else
+				{
+
 					intermediate = true; 
+				}
 			}
 
 		}
@@ -354,7 +331,7 @@ public class MainScript : MonoBehaviour
 			}
 			else
 			{
-				if(Math.Abs(mol.transform.position.x) > Settings.Values.fovealLimit )
+				if(Math.Abs(mol.transform.position.x) > Settings.Values.periphLimit )
 				{
 					stimulusObject = mol;
 					break;
@@ -385,8 +362,11 @@ public class MainScript : MonoBehaviour
 		stimulus = false; 
 		stimulusEnd = true; 
 
-		stimulusObject = null;
-		currentStimulus = null;
+//		stimulusObject = null;
+//		currentStimulus = null;
+
+		
+		Screen.showCursor = true; 
 	}
 
 	void FixedUpdate()

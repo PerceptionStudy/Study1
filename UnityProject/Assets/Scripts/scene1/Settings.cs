@@ -246,6 +246,7 @@ public class SettingsValues : ICloneable
 
 	public float repeat = 2.0f;
 	public float fovealLimit = 250.0f;
+	public float periphLimit = 250.0f;
 	public float waveLength = 100.0f;
 
 	public float duration_1 = 1000.0f;
