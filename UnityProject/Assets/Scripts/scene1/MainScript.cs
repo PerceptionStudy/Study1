@@ -79,13 +79,13 @@ public class MainScript : MonoBehaviour
 		int[] amplitudeValues = {(int)Settings.Values.amplitude_1, (int)Settings.Values.amplitude_2, (int)Settings.Values.amplitude_3, (int)Settings.Values.amplitude_4, (int)Settings.Values.amplitude_5};
 
 		int count = 0;
-		for(int i = 0; i < 1/*2*/; i++)
+		for(int i = 0; i < 2; i++)
 		{
-			for(int j = 0; j < 1 /*Settings.Values.repeat*/; j++)
+			for(int j = 0; j < Settings.Values.repeat; j++)
 			{
-				for(int k = 0; k < 2/*durationValues.Count()*/; k++)
+				for(int k = 0; k < durationValues.Count(); k++)
 				{
-					for(int l = 0; l < 2/*amplitudeValues.Count()*/; l++)
+					for(int l = 0; l < amplitudeValues.Count(); l++)
 					{
 						Stimulus stimulus = new Stimulus(count, i, j, durationValues[k], amplitudeValues[l]);
 						stimuli.Add(stimulus);
@@ -101,7 +101,7 @@ public class MainScript : MonoBehaviour
 
 	void OnGUI()
 	{
-		GUI.depth = 1;
+		GUI.depth = 10;
 
 		if(setupGUI){
 			GUI.Window (1, new Rect(0.0f, 0.0f, Screen.width, Screen.height), SetupGUI, "Setup"); 

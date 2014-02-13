@@ -171,7 +171,7 @@ public class Settings : Singleton<Settings>
 	
 	void OnGUI() 
 	{
-		GUI.depth = 0;
+		GUI.depth = 1;
 
 		windowRect = GUI.Window(0, windowRect, DoMyWindow, "My Window");
 	}
