@@ -12,16 +12,16 @@ using System.Diagnostics;
 
 public class Stimulus
 {
-	int stimulusId;
-	int focusRegion;
-	int repeatId;
-	int duration;
-	int amplitude;
+	public int stimulusId;
+	public int visionArea;
+	public int repeatId;
+	public int duration;
+	public int amplitude;
 
-	public Stimulus(int stimulusId, int focusRegion, int repeatId, int duration, int amplitude)
+	public Stimulus(int stimulusId, int visionArea, int repeatId, int duration, int amplitude)
 	{
 		this.stimulusId = stimulusId;
-		this.focusRegion = focusRegion;
+		this.visionArea = visionArea;
 		this.repeatId = repeatId;
 		this.duration = duration;
 		this.amplitude = amplitude;
@@ -30,7 +30,10 @@ public class Stimulus
 
 public class MainScript : MonoBehaviour 
 {
-	private bool initiated = false;
+	private bool initiated = false;	
+	private int currentStimulusIndex = 0;
+	private Stimulus currentStimulus = null;
+	private MolObject stimulusObject = null; 	
 	private bool setupGUI = true; 
 	private bool countdown = false; 
 	private bool intermediate = false; 
@@ -64,7 +67,7 @@ public class MainScript : MonoBehaviour
 			molObjects[i] = MolObject.CreateNewMolObject(gameObject.transform, "molObject_" + i, new MolColor(molColors[UnityEngine.Random.Range(0, molColors.Count ())]));	
 
 		initiated = true;
-		focusObject = null; 
+		stimulusObject = null; 
 	}
 
 	void LoadStimuli ()
@@ -127,11 +130,12 @@ public class MainScript : MonoBehaviour
 		if(time < 1000) texName = "3";
 		GUI.DrawTexture (new Rect (0.0f, 0.0f, Screen.width, Screen.height), (UnityEngine.Texture)Resources.Load (texName)); 
 
-		if(time >= 3000){
+		if(time >= 3000)
+		{
 			countdown = false; 
 			stimulus = true; 
 
-			// TODO: load stimulus
+			//TODO start new stimulus here
 
 			stopWatch.Stop (); 
 			stopWatch.Reset (); 
@@ -312,27 +316,42 @@ public class MainScript : MonoBehaviour
 				Screen.showCursor = false; 
 			}
 		}
-
-		if (Input.GetKeyDown ("s") && Input.GetKey(KeyCode.LeftShift))
-		{
-			InitLuminanceFlicker (GetRandomMolObject ());
-		}
 	}
 
-	MolObject GetRandomMolObject()
+	void StartNewStimulus ()
 	{
-		return molObjects [UnityEngine.Random.Range (0, molObjects.Count () - 1)]; 
-	}
+		currentStimulus = stimuli[currentStimulusIndex];
 
-	void InitLuminanceFlicker(MolObject molObject)
-	{
-		if (focusObject != null) 
+		var shuffle = (from mol in molObjects orderby  Guid.NewGuid() select mol);
+		molObjects = shuffle.ToArray();
+
+		foreach(MolObject mol in molObjects)
 		{
-			focusObject.StopLuminanceFlicker (); 
+			if(currentStimulus.visionArea == 0)
+			{
+				if(Math.Abs(mol.transform.position.x) < Settings.Values.fovealLimit )
+				{
+					stimulusObject = mol;
+					break;
+				}
+			}
+			else
+			{
+				if(Math.Abs(mol.transform.position.x) > Settings.Values.fovealLimit )
+				{
+					stimulusObject = mol;
+					break;
+				}
+			}
 		}
 
-		molObject.StartLuminanceFlicker (); 
-		focusObject = molObject; 
+		if(stimulusObject == null)
+		{
+			throw new System.Exception("Did not find scene element that matches the stimulus properties");
+		}
+
+		stimulusObject.StartStimulus((int)Settings.Values.waveLength, currentStimulus.amplitude, currentStimulus.duration);
+		print("Start stimulus, visionArea: " + currentStimulus.visionArea + " halfWaveLength: " + Settings.Values.waveLength + " amplitude: " + currentStimulus.amplitude + " duration: " + currentStimulus.duration + " distance: " +stimulusObject.gameObject.transform.position.x);
 	}
 
 	void FixedUpdate()
