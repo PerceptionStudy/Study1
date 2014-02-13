@@ -169,7 +169,7 @@ public class SettingsValues : ICloneable
 {
 	public float drag = 5.0f; 
 	public float randomForce = 1000.0f;	
-
+	public float debug = 0.0f;
 	public float molScale = 20.0f;
 	public float molCount = 500.0f;
 
