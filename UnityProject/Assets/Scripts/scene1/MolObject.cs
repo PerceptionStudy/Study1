@@ -92,11 +92,26 @@ public class MolObject : MonoBehaviour
 		{
 			currentWaveTime += halfWaveLength / 2;
 		}
-		
+
+		int halfAmplitude = amplitude / 2;
 		float progress = (float) currentWaveTime / halfWaveLength;	
-		float intensityShift = Mathf.Clamp((up) ? progress * 2.0f - 1.0f : (1.0f-progress) * 2.0f - 1.0f, -1.0f, 1.0f) * amplitude;
-		float currentIntensity = Mathf.Clamp(defaultColor.L + intensityShift, 0, 100);		
-		
+		float intensityShift = Mathf.Clamp((up) ? progress * 2.0f - 1.0f : (1.0f-progress) * 2.0f - 1.0f, -1.0f, 1.0f) * (float)halfAmplitude;
+
+		float currentIntensity = intensityShift + defaultColor.L; // = Mathf.Clamp(defaultColor.L + intensityShift, 0, 100);		
+
+		int deltaUp = (int)defaultColor.L + halfAmplitude;
+		int deltaDown = (int)defaultColor.L - halfAmplitude;
+
+		if (deltaUp > 100)
+		{
+			currentIntensity -= deltaUp - 100;
+		}
+		else if (deltaDown < 0)
+		{
+			currentIntensity += Math.Abs(deltaDown);
+		}
+
+		currentIntensity = Mathf.Clamp (currentIntensity, 0.0f, 100.0f);
 		currentColor = new MolColor(currentIntensity, defaultColor.a, defaultColor.b);
 		gameObject.GetComponent<MeshRenderer> ().material.color = currentColor.rgba;
 		

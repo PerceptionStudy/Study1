@@ -130,7 +130,7 @@ public class MainScript : MonoBehaviour
 		int count = 0;
 		for(int i = 0; i < 2; i++)
 		{
-			for(int j = 0; j < Settings.Values.repeat; j++)
+			for(int j = 0; j <= Settings.Values.repeat; j++)
 			{
 				for(int k = 0; k < durationValues.Count(); k++)
 				{
@@ -278,12 +278,8 @@ public class MainScript : MonoBehaviour
 	void CountdownGUI(int windowID)
 	{
 		int time = (int)stopWatch.ElapsedMilliseconds;
-		string texName = "1"; 
-		if(time < 2000) texName = "2";
-		if(time < 1000) texName = "3";
-		GUI.DrawTexture (new Rect (0.0f, 0.0f, Screen.width, Screen.height), (UnityEngine.Texture)Resources.Load (texName)); 
 
-		if(time >= 3000)
+		if(time >= 2000)
 		{
 			countdown = false; 
 			stimulus = true; 
@@ -294,6 +290,15 @@ public class MainScript : MonoBehaviour
 			stopWatch.Reset (); 
 			stopWatch.Start (); 
 		}
+
+		if (countdown)
+		{
+			string texName = "1"; 
+			if(time < 1000) texName = "2";
+			//		if(time < 1000) texName = "3";
+			GUI.DrawTexture (new Rect (0.0f, 0.0f, Screen.width, Screen.height), (UnityEngine.Texture)Resources.Load (texName)); 
+		}
+
 	}
 
 	void IntermediateGUI(int windowID)
