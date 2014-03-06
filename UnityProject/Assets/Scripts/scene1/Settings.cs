@@ -21,7 +21,7 @@ public class Settings : Singleton<Settings>
 
 	protected Settings()
 	{
-		settingsFilePath = "C:/study/" + settingsFileName;
+		settingsFilePath = "C:/PerceptionStudySettings/Study1/" + settingsFileName;
 		values = new SettingsValues();
 	}
 
